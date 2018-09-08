@@ -37,7 +37,7 @@ class Youtube
      * @throws \Exception
      */
     public function __construct($key)
-    {   die('Demo fork..');
+    {   die('Forked package!');
         if (is_string($key) && !empty($key)) {
             $this->youtube_key = $key;
         } else {
