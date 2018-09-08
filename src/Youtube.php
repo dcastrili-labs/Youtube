@@ -5,6 +5,11 @@ namespace Alaouy\Youtube;
 class Youtube
 {
 
+    /*
+     * @var string
+     */
+    public $oauth2Token;
+
     /**
      * @var string
      */
@@ -40,9 +45,19 @@ class Youtube
     {
         if (is_string($key) && !empty($key)) {
             $this->youtube_key = $key;
-        } else {
-            throw new \Exception('Google API key is Required, please visit https://console.developers.google.com/');
         }
+    }
+
+    /**
+     * For endpoints that request private data add a valid token
+     * @param $token
+     * @return $this
+     */
+    public function setOauth2Token($token)
+    {
+       $this->oauth2Token = $token;
+
+       return $this;
     }
 
     /**
@@ -686,11 +701,22 @@ class Youtube
      */
     public function api_get($url, $params)
     {
-        //set the youtube key
-        $params['key'] = $this->youtube_key;
-
         //boilerplates for CURL
         $tuCurl = curl_init();
+
+        //If the endPoint request private information &
+        // oauth2 token is provided
+        if (! empty($this->oauth2Token)) {
+            curl_setopt($tuCurl, CURLOPT_HTTPHEADER, array(
+                sprintf('Authorization: Bearer %s', $this->oauth2Token)
+            ));
+        } elseif(is_string($this->youtube_key) && !empty($this->youtube_key)) {
+            //set the youtube key
+            $params['key'] = $this->youtube_key;
+        } else {
+            throw new \Exception('Google API key is Required, please visit https://console.developers.google.com/');
+        }
+
         curl_setopt($tuCurl, CURLOPT_URL, $url . (strpos($url, '?') === false ? '?' : '') . http_build_query($params));
         if (strpos($url, 'https') === false) {
             curl_setopt($tuCurl, CURLOPT_PORT, 80);
