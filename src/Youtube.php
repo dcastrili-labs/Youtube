@@ -319,6 +319,36 @@ class Youtube
     }
 
     /**
+     * Generic Search interface WITH OAUTH2, use any parameters specified in
+     * the API reference
+     *
+     * @param $params
+     * @param $pageInfo
+     * @return array
+     * @throws \Exception
+     */
+    public function searchAdvancedWithOauth2($params, $pageInfo = false)
+    {
+        $API_URL = $this->getApi('search.list');
+
+        /*
+        if (empty($params) || (!isset($params['q']) && !isset($params['channelId']) && !isset($params['videoCategoryId']))) {
+            throw new \InvalidArgumentException('at least the Search query or Channel ID or videoCategoryId must be supplied');
+        }
+        */
+
+        $apiData = $this->api_get($API_URL, $params);
+        if ($pageInfo) {
+            return [
+                'results' => $this->decodeList($apiData),
+                'info' => $this->page_info,
+            ];
+        } else {
+            return $this->decodeList($apiData);
+        }
+    }
+
+    /**
      * Generic Search Paginator, use any parameters specified in
      * the API reference and pass through nextPageToken as $token if set.
      *
@@ -392,17 +422,37 @@ class Youtube
      * @return array
      * @throws \Exception
      */
-    public function getPlaylistsByChannelId($channelId, $optionalParams = [], $part = ['id', 'snippet', 'status'])
+    public function getPlaylistsByChannelId($optionalParams = [], $part = ['id', 'snippet', 'status'])
     {
         $API_URL = $this->getApi('playlists.list');
         $params = [
-            'channelId' => $channelId,
             'part' => implode(', ', $part)
         ];
 
         if ($optionalParams) {
             $params = array_merge($params, $optionalParams);
         }
+
+        $apiData = $this->api_get($API_URL, $params);
+
+        $result = ['results' => $this->decodeList($apiData)];
+        $result['info']['totalResults'] =  (isset($this->page_info['totalResults']) ? $this->page_info['totalResults'] : 0);
+        $result['info']['nextPageToken'] = (isset($this->page_info['nextPageToken']) ? $this->page_info['nextPageToken'] : false);
+        $result['info']['prevPageToken'] = (isset($this->page_info['prevPageToken']) ? $this->page_info['prevPageToken'] : false);
+
+        return $result;
+    }
+
+    /**
+     * @param string $channelId
+     * @param array $optionalParams
+     * @param array $part
+     * @return array
+     * @throws \Exception
+     */
+    public function getMyPlaylists($params = [], $part = ['id', 'snippet', 'status'])
+    {
+        $API_URL = $this->getApi('playlists.list');
 
         $apiData = $this->api_get($API_URL, $params);
 
