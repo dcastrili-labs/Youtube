@@ -81,7 +81,7 @@ class Youtube
      */
     private function setReferer($value)
     {
-        $this->refererUrl = sprintf('Referer: %s', $value);
+        $this->refererUrl = $value;
 
         return $this;
     }
