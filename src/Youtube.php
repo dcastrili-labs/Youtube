@@ -793,7 +793,7 @@ class Youtube
         }
 
         if ($this->oauth2Token) {
-            curl_setopt($tuCurl, CURLOPT_HTTPHEADER, $this->oauth2Token);
+            curl_setopt($tuCurl, CURLOPT_HTTPHEADER, array($this->oauth2Token));
         } elseif(is_string($this->youtube_key) && !empty($this->youtube_key)) {
             //set the youtube key
             $params['key'] = $this->youtube_key;
