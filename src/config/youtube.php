@@ -11,5 +11,5 @@
 
 return [
     'key' => env('YOUTUBE_API_KEY', 'YOUR_API_KEY'),
-    'referer_url' => env('YOUTUBE_API_KEY', '')
+    'referer_url' => env('REFERER_URL', '')
 ];
