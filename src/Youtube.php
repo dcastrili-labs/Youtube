@@ -4,12 +4,6 @@ namespace Alaouy\Youtube;
 
 class Youtube
 {
-
-    /*
-     * @var string
-     */
-    public $oauth2Token;
-
     /**
      * @var string
      */
@@ -34,6 +28,16 @@ class Youtube
      */
     public $page_info = [];
 
+    /*
+     * @var string
+     */
+    protected $refererUrl;
+
+    /**
+     * @var string
+     */
+    public $oauth2Token;
+
     /**
      * Constructor
      * $youtube = new Youtube(['key' => 'KEY HERE'])
@@ -41,11 +45,13 @@ class Youtube
      * @param string $key
      * @throws \Exception
      */
-    public function __construct($key)
+    public function __construct($key, $referer)
     {
         if (is_string($key) && !empty($key)) {
             $this->youtube_key = $key;
         }
+
+        $this->setReferer($referer);
     }
 
     /**
@@ -55,9 +61,37 @@ class Youtube
      */
     public function setOauth2Token($token)
     {
-       $this->oauth2Token = $token;
+       $this->oauth2Token = sprintf('Authorization: Bearer %s', $token);
 
        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getOauth2Token()
+    {
+        return $this->oauth2Token;
+    }
+
+    /**
+     * For security reasons only pass authorized domains
+     * @param $value
+     * @return $this
+     */
+    private function setReferer($value)
+    {
+        $this->refererUrl = sprintf('Referer: %s', $value);
+
+        return $this;
+    }
+
+    /**
+     *
+     */
+    public function getReferer()
+    {
+       return $this->refererUrl;
     }
 
     /**
@@ -754,12 +788,12 @@ class Youtube
         //boilerplates for CURL
         $tuCurl = curl_init();
 
-        //If the endPoint request private information &
-        // oauth2 token is provided
-        if (! empty($this->oauth2Token)) {
-            curl_setopt($tuCurl, CURLOPT_HTTPHEADER, array(
-                sprintf('Authorization: Bearer %s', $this->oauth2Token)
-            ));
+        if ($this->refererUrl) {
+            curl_setopt($tuCurl, CURLOPT_REFERER, $this->refererUrl);
+        }
+
+        if ($this->oauth2Token) {
+            curl_setopt($tuCurl, CURLOPT_HTTPHEADER, $this->oauth2Token);
         } elseif(is_string($this->youtube_key) && !empty($this->youtube_key)) {
             //set the youtube key
             $params['key'] = $this->youtube_key;
